@@ -1,0 +1,509 @@
+ <!DOCTYPE html>
+ <html lang = "en">
+     <head>
+     <meta charset = "utf-8">
+     <meta name = "viewport" content = "width=device-width, initial-scale=1">
+     <title> Husbando Tier List </title>
+
+     <style>
+html, body {
+    overscroll-behavior: none;
+    overflow-x: hidden;
+    overflow-y: hidden;
+}
+canvas {
+    touch-action: none;
+    border: solid 1px purple;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+ </style>
+
+ </head>
+ <body>
+ <canvas height = "450" width = "650" id = "gameWindow"></ canvas>
+
+     <script>
+//beginning of Canvas Method
+    const gameWindow = document.getElementById("gameWindow");
+	const game = gameWindow.getContext("2d");
+
+// CONFIG
+
+
+	const rotateSpeed = 2.5
+    const maxAngle = 0.13
+
+    //Loading sprites
+    const loadImages = {
+    Characters: [{
+            name: "PerfectCell",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/i/pc.png"
+        }, {
+            name: "AlanWake",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/i/aw.png"
+        }, {
+            name: "Herobrine",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/i/hb.png"
+        }, {
+            name: "Akeria",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/i/ak.png"
+        }, {
+            name: "Noi",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/i/noi.png"
+        }, {
+            name: "Jessica",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/i/jr.png"
+        }, {
+            name: "Guts",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/i/guts.png"
+        }, {
+            name: "Bea",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/i/bea.png"
+        }, {
+            name: "PrinceLir",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/i/pl.png"
+        }, {
+            name: "ChloePrice",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/i/price.png"
+        }
+    ],
+    bg: [{
+            name: "bgWall",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/bgWall.png"
+        }, {
+            name: "bgList",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/bgList.png"
+        }, {
+            name: "bgscroll",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/bgscroll.png"
+        }
+    ],
+    button: [{
+            name: "button",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/button.png"
+        }, {
+            name: "buttonHover",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/button2.png"
+        }
+    ]
+
+}
+//Loading audio
+const loadAudio = {
+    drop: [{
+            name: "drop1",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/flick.mp3"
+        }
+    ],
+    music: [{
+            name: "TierList_song",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/TierList_song.mp3"
+        }
+    ]
+}
+
+// Load Assets, then start initialize
+
+let assets = {}
+let loadPromises = []
+
+function checkImgLoad(imgSrc) { // Load image Promise
+    return new Promise((resolve, reject) => {
+        
+        imgSrc.onload = () => {
+            resolve(imgSrc)
+        }
+
+        imgSrc.onerror = () => {
+            reject(new Error(`Failed to load ${imgSrc.src}`))
+        }
+    })
+}
+
+function checkAudLoad(audSrc) { // Load audio Promise
+    return new Promise((resolve, reject) => {
+        audSrc.crossOrigin = "anonymous"
+            audSrc.addEventListener('canplaythrough', () => resolve(audSrc), {
+                once: true
+            })
+
+            audSrc.onerror = () => {
+            reject(new Error(`Failed to load ${audSrc.src}`))
+        }
+    })
+}
+
+for (const [groupName, groupArray] of Object.entries(loadImages)) { //generates promises for images
+    assets[groupName] = []
+    for (const sprite of groupArray) {
+        const img = new Image();
+		img.crossOrigin = "anonymous"
+        img.src = sprite.src
+        img.name = sprite.name
+        assets[groupName].push(img)
+        loadPromises.push(checkImgLoad(img))
+    }
+}
+
+for (const [groupName, groupArray] of Object.entries(loadAudio)) { //generates promises for audio
+    assets[groupName] = []
+    for (const sound of groupArray) {
+        const aud = new Audio();
+        aud.src = sound.src
+            aud.name = sound.name
+            assets[groupName].push(aud)
+            loadPromises.push(checkAudLoad(aud))
+    }
+}
+
+Promise.all(loadPromises) //requests promises, then initializes
+.then(() => {
+    console.log('All assets loaded:', assets)
+    initialize()
+})
+.catch(() => {
+    console.error("asset loading error")
+})
+
+//Creating Assets
+
+class Sprite { //Creating Image Objects
+    constructor(name, img, x, y, zIndex = 0) {
+        this.name = name;
+        this.img = img;
+        this.x = x;
+        this.y = y;
+        this.zIndex = zIndex;
+        this.isGrabbed = false;
+        this.width = img.width;
+        this.height = img.height;
+        this.minAngle = (Math.random() - 0.5) * 0.17;
+        this.angle = this.minAngle;
+        this.rank = "Unranked";
+    }
+
+    contains(px, py) {
+        return (
+            px >= this.x &&
+            px <= this.x + this.img.width &&
+            py >= this.y &&
+            py <= this.y + this.img.height);
+    }
+}
+let characterObjects = []
+function createObjects() {
+    let loadingZ = 0
+        assets.Characters.forEach((object) => {
+            characterObjects.push(new Sprite(object.name, object, Math.floor(Math.random() * 90 + 10), Math.floor(Math.random() * 370 + 10), loadingZ++))
+        })
+}
+
+class Zone { //Creating Tier Zones
+    constructor(rank, order) {
+        this.rank = rank
+            this.x = 156
+            this.y = 10 + order * 87
+            this.width = 500
+            this.height = 87
+    }
+
+    contains(zx, zy) {
+        return (
+            zx >= this.x &&
+            zx <= this.x + this.width &&
+            zy >= this.y &&
+            zy <= this.y + this.height)
+    }
+}
+let tierZones = []
+function createTierZones() {
+    tierZones.push(new Zone('S', 0))
+    tierZones.push(new Zone('A', 1))
+    tierZones.push(new Zone('B', 2))
+    tierZones.push(new Zone('C', 3))
+    tierZones.push(new Zone('D', 4))
+}
+
+//Creating Audio Assets
+let dropSFX = null;
+function createSFX() {
+    const dropList = assets.drop;
+    dropSFX = dropList[Math.floor(Math.random() * dropList.length)];
+
+}
+let tierOST = null;
+function createOST() {
+    tierOST = assets.music[0]
+        tierOST.loop = true;
+    tierOST.volume = 0.5
+}
+//Creating Background Assets
+let background = []
+let bgScroll = null
+function createBackground() {
+    background.push(assets.bg[0])
+    background.push(assets.bg[1])
+    bgScroll = game.createPattern(assets.bg[2], "repeat")
+
+}
+
+//initialize
+let button = null
+function initialize() {
+    button = { //Creating button
+        button: assets.button[0],
+        buttonHI: assets.button[1],
+        cy: 451 + assets.button[0].height / 2,
+        cx: 71,
+        width: assets.button[0].width,
+        height: assets.button[0].height,
+        scale: 0.8,
+		transition: 0,
+        isButtonHover: function isButtonHover(zx, zy) {
+            return (
+                zx >= this.cx - (this.width * this.scale) / 2 &&
+                zx <= this.cx + (this.width * this.scale) / 2 &&
+                zy >= this.cy - (this.height * this.scale) / 2 &&
+                zy <= this.cy + (this.height * this.scale) / 2)
+        }
+    }
+    createBackground()
+    createObjects()
+    createTierZones()
+    createSFX()
+    createOST()
+    createPointerListeners()
+    tierOST.play()
+    gameLoop()
+}
+//temp
+
+//Update
+
+//Mouse Movement + Release Triggers + Button Hover Check
+let sentForm = null
+let grabbedSprite = null;
+let buttonHover = null;
+let mousePrevPos = {
+    x: 0,
+    y: 0
+};
+function createPointerListeners() {
+    gameWindow.addEventListener("pointerdown", () => {
+        if (tierOST && tierOST.paused)
+            tierOST.play();
+    }, {
+        once: true
+    });
+
+    gameWindow.addEventListener('pointerdown', e => {
+        gameWindow.setPointerCapture(e.pointerId);
+
+        const rect = gameWindow.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+		if (isListFinished && button.isButtonHover(mx, my) && !sentForm) {
+			submitForm()
+			sentForm = true
+		}
+        // pick the topmost sprite under the pointer
+        characterObjects
+        .slice().sort((a, b) => a.zIndex - b.zIndex)
+        .some(spr => {
+            if (spr.contains(mx, my)) {
+                grabbedSprite = spr;
+                spr.isGrabbed = true;
+                mousePrevPos = {
+                    x: mx,
+                    y: my
+                };
+
+                // bump everyone’s zIndex up, then reset this one to 0 (top)
+                characterObjects.forEach(s => s.zIndex++);
+                spr.zIndex = 0;
+
+                //stops looking for selected object
+                return true;
+            }
+        });
+    });
+    gameWindow.addEventListener('pointermove', e => {
+        const rect = gameWindow.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+
+        if (!grabbedSprite) {
+            buttonHover = button && button.isButtonHover(mx, my)
+            return
+        };
+
+        grabbedSprite.x += mx - mousePrevPos.x;
+        grabbedSprite.y += my - mousePrevPos.y;
+        mousePrevPos = {
+            x: mx,
+            y: my
+        };
+    });
+
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(evt => {
+        gameWindow.addEventListener(evt, e => {
+            if (grabbedSprite) {
+                grabbedSprite.minAngle = (Math.random() - 0.5) * 0.17;
+                grabbedSprite.isGrabbed = false;
+                grabbedSprite = null;
+                gameWindow.releasePointerCapture(e.pointerId);
+                dropSFX.play();
+                checkFinishedList();
+            }
+        });
+    });
+}
+//Assigns Tier Rank to Each Image
+let isListFinished = null
+function checkFinishedList() {
+    characterObjects.forEach((object) => {
+        //calculate center
+        let cx = object.x + object.width / 2
+            let cy = object.y + object.height / 2
+            //find containing rank zone
+            const hitZone = tierZones.find(zone => zone.contains(cx, cy))
+            //assign zone value to Object
+            object.rank = hitZone ? hitZone.rank : 'Unranked'
+    })
+    //if every object has an assigned rank, log ranks and initialize the submit button
+    if (characterObjects.every(obj => obj.rank != 'Unranked')) {
+        console.log(characterObjects.map(o => [o.name, o.rank]))
+        isListFinished = true
+    }
+}
+
+function update(dt) { //generic update function
+    updatePhotos(dt)
+    updateButton(dt)
+}
+
+function updatePhotos(dt) { //mainly gives photos a rotation on hold
+    characterObjects.forEach((object) => {
+        if (object.isGrabbed) {
+            object.angle += dt * rotateSpeed * (1 - object.angle / maxAngle)
+            if (object.angle > maxAngle)
+                object.angle = maxAngle
+        } else if (object.angle > object.minAngle) {
+            object.angle -= dt * rotateSpeed / (object.angle * object.angle + 1)
+            if (object.angle < object.minAngle)
+                object.angle = object.minAngle
+        }
+    })
+}
+let buttonPhasing = null
+    let bouncePhase = 0
+function updateButton(dt) {
+    if (!isListFinished)
+        return
+        if (!buttonPhasing) {
+            button.cy += (300 - button.cy) * (1 - Math.exp(-5 * dt))
+            if (button.cy <= 301)
+                buttonPhasing = true
+                    return
+        }
+    if (buttonHover == true) {
+        button.transition += (1 - button.transition) * (1 - Math.exp(-7 * dt))
+		if (button.transition > 1) button.transition = 1
+    } else {
+		button.transition -= (1 - (1 - button.transition)) * (1 - Math.exp(-7 * dt))
+		if (button.transition < 0) button.transition = 0
+	}
+    bouncePhase = (bouncePhase + dt) % (Math.PI * 2)
+    button.cy = 300 - 5 * (Math.cos(bouncePhase) - 1)
+}
+
+//Render
+
+function render() {
+    game.fillStyle = "#000"; // black
+    game.fillRect(0, 0, gameWindow.width, gameWindow.height);
+    renderBackground()
+
+    characterObjects.sort((a, b) => b.zIndex - a.zIndex);
+    characterObjects.forEach((object) => {
+        game.save()
+        game.shadowColor = 'rgba(0,0,0,0.5)';
+        game.shadowBlur = 5 + 5 * (object.angle / maxAngle);
+        game.shadowOffsetX = 3 + 3 * (object.angle / maxAngle);
+        game.shadowOffsetY = 3 + 3 * (object.angle / maxAngle);
+        game.translate(object.x + object.width / 2, object.y + object.height / 7)
+        game.rotate(object.angle * -1)
+        game.drawImage(object.img, //image
+             - (object.width + 3 * (object.angle / maxAngle)) / 2, //vertical align
+             - (object.height + 3 * (object.angle / maxAngle)) / 7, //horizontal align
+            object.width + 7 * ((object.angle - object.minAngle) / (maxAngle - object.minAngle)), //width
+            object.height + 7 * ((object.angle - object.minAngle) / (maxAngle - object.minAngle)) //height
+        )
+        game.restore()
+    })
+    renderButton()
+}
+let scroll = 0
+function renderBackground() {
+    game.drawImage(background[0], 0, 0)
+    game.fillStyle = bgScroll;
+    game.save();
+    game.globalCompositeOperation = "multiply";
+    game.translate(scroll, scroll);
+    game.fillRect(-650, -450, gameWindow.width * 3, gameWindow.height * 3);
+    game.restore()
+    scroll = (scroll + 0.1) % 256
+    game.drawImage(background[1], 0, 0)
+}
+
+function renderButton() {
+	button.scale = 0.92 + 0.08 * button.transition
+	game.globalAlpha = 1
+    game.save()
+    game.translate(button.cx, button.cy);
+	game.scale(button.scale, button.scale)
+    game.drawImage(button.button, -button.width / 2, -button.height / 2)
+	game.globalAlpha = button.transition
+    game.drawImage(button.buttonHI, -button.width / 2, -button.height / 2)
+	game.globalAlpha = 1
+    game.restore()
+}
+
+//Form submit
+
+function submitForm() {
+	const submission = {};
+	characterObjects.forEach(obj => {
+		submission[obj.name] = obj.rank;
+	});
+
+	fetch('https://script.google.com/macros/s/AKfycbyvKPOrqadsWbTbYGmEeHsDt0kCYpAbCNv6pQLqX5AiXOLBplEg82wMDR244Mf0U44t/exec', {
+		method: 'POST',
+		mode: 'cors',
+		headers: {
+			'Content-Type': 'application/json'
+		},
+		body: JSON.stringify(submission)
+	})
+	.then(() => console.log('Sent to Google Sheet'))
+	.catch(err => console.error('Sheet submission failed:', err));
+}
+
+//game loop
+let lastTime = performance.now();
+
+function gameLoop(currentTime = performance.now()) {
+
+    const dt = (currentTime - lastTime) / 1000;
+    lastTime = currentTime;
+
+    update(dt);
+    render();
+
+    requestAnimationFrame(gameLoop);
+}
+ </script>
+ </body>
+</html>
