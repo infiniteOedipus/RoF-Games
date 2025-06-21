@@ -13,7 +13,7 @@ html, body {
 }
 canvas {
     touch-action: none;
-    border: solid 1px yellow;
+    /*border: solid 1px yellow;*/
     position: absolute;
     top: 0;
     left: 0;
@@ -86,6 +86,12 @@ canvas {
         }, {
             name: "buttonHover",
             src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/button2.png"
+        }, {
+            name: "buttonSent",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/buttonSent.png"
+        }, {
+            name: "buttonSentHover",
+            src: "https://file.garden/Z6AuUPzHKDCUgCsZ/RoFGames/Vessta_Tier_List/buttonSent2.png"
         }
     ]
 
@@ -251,10 +257,13 @@ function createBackground() {
 
 //initialize
 let button = null
+let isButtonSent = null
 function initialize() {
     button = { //Creating button
         button: assets.button[0],
         buttonHI: assets.button[1],
+	buttonSent: assets.button[2],
+        buttonSentHI: assets.button[3],
         cy: 451 + assets.button[0].height / 2,
         cx: 71,
         width: assets.button[0].width,
@@ -306,6 +315,7 @@ function createPointerListeners() {
         const my = e.clientY - rect.top;
 		if (isListFinished && button.isButtonHover(mx, my) && !sentForm) {
 			submitForm()
+			isButtonSent = true
 			sentForm = true
 		}
         // pick the topmost sprite under the pointer
@@ -464,9 +474,11 @@ function renderButton() {
     game.save()
     game.translate(button.cx, button.cy);
 	game.scale(button.scale, button.scale)
-    game.drawImage(button.button, -button.width / 2, -button.height / 2)
+	if (!isButtonSent) game.drawImage(button.button, -button.width / 2, -button.height / 2)
+	if (isButtonSent) game.drawImage(button.buttonSent, -button.width / 2, -button.height / 2)
 	game.globalAlpha = button.transition
-    game.drawImage(button.buttonHI, -button.width / 2, -button.height / 2)
+  	if (!isButtonSent) game.drawImage(button.buttonHI, -button.width / 2, -button.height / 2)
+	if (isButtonSent) game.drawImage(button.buttonSentHI, -button.width / 2, -button.height / 2)
 	game.globalAlpha = 1
     game.restore()
 }
