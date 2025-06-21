@@ -128,7 +128,7 @@ function checkImgLoad(imgSrc) { // Load image Promise
     })
 }
 
-function checkAudLoad(audSrc) { // Load audio Promise
+/*function checkAudLoad(audSrc) { // Load audio Promise
     return new Promise((resolve, reject) => {
         audSrc.crossOrigin = "anonymous"
             audSrc.addEventListener('canplaythrough', () => resolve(audSrc), {
@@ -139,7 +139,7 @@ function checkAudLoad(audSrc) { // Load audio Promise
             reject(new Error(`Failed to load ${audSrc.src}`))
         }
     })
-}
+}*/
 
 for (const [groupName, groupArray] of Object.entries(loadImages)) { //generates promises for images
     assets[groupName] = []
@@ -153,7 +153,7 @@ for (const [groupName, groupArray] of Object.entries(loadImages)) { //generates 
     }
 }
 
-for (const [groupName, groupArray] of Object.entries(loadAudio)) { //generates promises for audio
+/*for (const [groupName, groupArray] of Object.entries(loadAudio)) { //generates promises for audio
     assets[groupName] = []
     for (const sound of groupArray) {
         const aud = new Audio();
@@ -162,7 +162,7 @@ for (const [groupName, groupArray] of Object.entries(loadAudio)) { //generates p
             assets[groupName].push(aud)
             loadPromises.push(checkAudLoad(aud))
     }
-}
+}*/
 
 Promise.all(loadPromises) //requests promises, then initializes
 .then(() => {
@@ -235,15 +235,17 @@ function createTierZones() {
 //Creating Audio Assets
 let dropSFX = null;
 function createSFX() {
-    const dropList = assets.drop;
-    dropSFX = dropList[Math.floor(Math.random() * dropList.length)];
-
+	dropSFX = new Audio()
+	dropSFX.src = loadAudio.drop[0].src
 }
+
 let tierOST = null;
 function createOST() {
-    tierOST = assets.music[0]
-        tierOST.loop = true;
+	tierOST = new Audio()
+	tierOST.src = loadAudio.music[0].src
+    tierOST.loop = true;
     tierOST.volume = 0.5
+	tierOST.addEventListener('canplaythrough', () => tierOST.play())
 }
 //Creating Background Assets
 let background = []
@@ -284,7 +286,6 @@ function initialize() {
     createSFX()
     createOST()
     createPointerListeners()
-    tierOST.play()
     gameLoop()
 }
 //temp
